@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'java-library'
 }
 
 java {
@@ -7,14 +7,33 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-jar {
-    archiveBaseName = 'methods_injector_agent'
+// ASM is supplied by the Minecraft/Fabric runtime. Keep it compile-only so
+// the agent does not bundle duplicate ASM classes into the game.
+dependencies {
+    compileOnly 'org.ow2.asm:asm:9.8'
+    compileOnly 'org.ow2.asm:asm-tree:9.8'
+    compileOnly 'org.ow2.asm:asm-commons:9.8'
+}
+
+tasks.named('jar') {
+    archiveBaseName.set('methods_injector_agent')
+
     manifest {
         attributes(
-                'Premain-Class': 'ca.dnamobile.droidbridgelauncher.agent.StartInjectors',
-                'Agent-Class': 'ca.dnamobile.droidbridgelauncher.agent.StartInjectors',
+                'Manifest-Version': '1.0',
+                'Premain-Class': 'ca.dnamobile.dbridgelauncher.agent.StartInjectors',
+                'Agent-Class': 'ca.dnamobile.dbridgelauncher.agent.StartInjectors',
                 'Can-Redefine-Classes': 'false',
                 'Can-Retransform-Classes': 'false'
         )
     }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude 'META-INF/*.SF'
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+    exclude 'module-info.class'
+
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
 }
