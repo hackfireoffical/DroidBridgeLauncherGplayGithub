@@ -1,0 +1,25 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'ca.dnamobile.nativeglfw'
+    compileSdk 35
+
+    defaultConfig {
+        minSdk 21
+        targetSdk 35
+    }
+
+    externalNativeBuild {
+        cmake {
+            path file('src/main/cpp/CMakeLists.txt')
+        }
+    }
+
+    ndkVersion '27.2.12479018'
+
+    buildFeatures {
+        buildConfig true
+    }
+}
