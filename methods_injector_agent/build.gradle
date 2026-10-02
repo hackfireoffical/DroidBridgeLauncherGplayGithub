@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+jar {
+    archiveBaseName = 'methods_injector_agent'
+    manifest {
+        attributes(
+                'Premain-Class': 'ca.dnamobile.droidbridgelauncher.agent.StartInjectors',
+                'Agent-Class': 'ca.dnamobile.droidbridgelauncher.agent.StartInjectors',
+                'Can-Redefine-Classes': 'false',
+                'Can-Retransform-Classes': 'false'
+        )
+    }
+}
