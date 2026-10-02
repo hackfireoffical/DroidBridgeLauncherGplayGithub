@@ -39,19 +39,34 @@ jobs:
           test -f settings.gradle || { echo "::error::settings.gradle is missing"; exit 1; }
           test -f app/build.gradle || test -f app/build.gradle.kts || {
             echo "::error::The app module has no app/build.gradle or app/build.gradle.kts."
-            echo "The workflow is ready, but the Gradle app module must be restored before APKs can be built."
             exit 1
           }
 
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
+      - name: Bootstrap Gradle wrapper if incomplete
+        shell: bash
+        run: |
+          if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+            echo "Gradle wrapper JAR is missing; bootstrapping Gradle 8.11.1."
+            curl -fsSL https://services.gradle.org/distributions/gradle-8.11.1-bin.zip -o /tmp/gradle.zip
+            rm -rf /tmp/gradle-dist
+            mkdir -p /tmp/gradle-dist
+            unzip -q /tmp/gradle.zip -d /tmp/gradle-dist
+            /tmp/gradle-dist/gradle-8.11.1/bin/gradle wrapper --gradle-version 8.11.1 --distribution-type bin
+          fi
+          test -f gradle/wrapper/gradle-wrapper.jar || {
+            echo "::error::Gradle wrapper JAR could not be generated."
+            exit 1
+          }
+
       - name: Build debug
         if: github.event_name == 'push' || inputs.build_type == 'debug'
         run: ./gradlew --no-daemon assembleDebug
 
       - name: Build release
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') || inputs.build_type == 'release'
+        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || inputs.build_type == 'release'
         run: ./gradlew --no-daemon assembleRelease
 
       - name: Upload debug APKs
@@ -65,7 +80,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Upload release APKs
-        if: always() && (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') || inputs.build_type == 'release')
+        if: always() && ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || inputs.build_type == 'release')
         uses: actions/upload-artifact@v4
         with:
           name: DroidBridge-release
