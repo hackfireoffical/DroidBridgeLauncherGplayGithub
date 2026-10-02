@@ -46,7 +46,7 @@ public final class ModManagerTools {
     }
     public static boolean canUseOfflineMode(@Nullable AccountStore accountStore) {
         if (hasActiveMicrosoftAccount(accountStore)) return true;
-        return LauncherSecurity.allowsOfflineProfileAuth() && hasCompletedMicrosoftLoginOnce(accountStore);
+        return LauncherSecurity.allowsOfflineProfileAuth();
     }
     public static boolean requireActiveMicrosoftAccountBeforeInstall(
             @NonNull Activity activity,
